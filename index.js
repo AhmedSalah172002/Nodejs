@@ -10,12 +10,14 @@ const MongoDBStore = require("connect-mongodb-session")(session);
 const flash = require("connect-flash");
 
 
-
+const deptRouter = require("./routes/Dept.route");
+const getDeptRouter = require("./routes/getDept.route");
 app.use(express.static(path.join(__dirname, "assets")));
 app.use(express.static(path.join(__dirname, "images")));
 
 app.set("view engine", "ejs");
 app.set("views", "views");
+
 
 // const store = new MongoDBStore({
 //   uri: process.env.DB_URL,
@@ -30,7 +32,8 @@ app.set("views", "views");
 //     store: store,
 //   })
 // );
-
+app.use("/departments", deptRouter);
+app.use("/getDepartments", getDeptRouter);
 
 
 app.listen(port, (err) => {
