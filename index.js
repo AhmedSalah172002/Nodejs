@@ -11,6 +11,8 @@ const flash = require("connect-flash");
 
 const deptRouter = require("./routes/Dept.route");
 const getDeptRouter = require("./routes/getDept.route");
+const authRouter = require("./routes/auth.route");
+const usersRouter = require("./routes/users.route");
 
 const subRouter = require("./routes/Sub.route");
 const getSubRouter = require("./routes/getSub.route");
@@ -39,7 +41,9 @@ app.use("/getDepartments", getDeptRouter);
 
 app.use("/materials", subRouter);
 app.use("/getMaterials", getSubRouter);
-
+app.use("/users", usersRouter);
+app.use("/", authRouter);
 app.listen(port, (err) => {
   console.log(`server listen on port ${port} `);
 });
+
