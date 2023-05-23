@@ -1,6 +1,36 @@
 <%- include('parts/head')%> <%- include('parts/navbar')%>
 
 
+
+<% 
+  let  deleteSuccessfully ,deleteFailed;
+  if(deleteDept){ 
+    deptDeletedSuccessfully = (deleteDept.includes('تم')) || false
+    // deleteFailed = (deleteDept.contains('خطأ')) || false
+  }
+%>
+
+
+
+<div class="users">
+    <div class="container">
+   
+      <% if(deptAddedSuccessfully){ %>
+        <div class="position-relative alert alert-success text-center fs-5 bold">
+            <%= deptAddedSuccessfully %>
+            <div class="close">X</div>
+        </div>
+        <% } %>
+
+        
+
+        <% if(deleteDept){ %>
+          <div class="position-relative alert <% if(deptDeletedSuccessfully){ %> alert-success <% }else{ %> alert-danger <% } %> text-center fs-5 bold">
+              <%= deleteDept %>
+              <div class="close">X</div>
+          </div>
+        <% } %>
+
         <div class="user mb-5">
             <h1 class="mb-3" style="color: white;">الأقسام :</h1>
             <table class="table table-striped table-dark">

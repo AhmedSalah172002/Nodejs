@@ -8,7 +8,11 @@ exports.getSub = (req, res, next) => {
     .then((subjects) => {
       res.render("materials", {
         subjects: subjects,
+        name: req.session.name,
+        type: req.session.type,
         pageTitle: "Subjects | FCI",
+        accademic: req.session.accademic,
+        image: req.session.image,
       });
     })
     .catch((err) => {
@@ -16,16 +20,42 @@ exports.getSub = (req, res, next) => {
     });
 };
 
+exports.getStudentSub = (req, res, next) => {
+  SubModel.getItems()
+    .then((subjects) => {
+      StudentModel.getItemByName(req.session.name).then((student) => {
+        res.render("regMaterials", {
+          subjects: subjects,
+          student: student,
+          validationError: req.flash("validationErrors")[0],
+          name: req.session.name,
+          type: req.session.type,
+          prevSub: req.session.prevSub,
+          accademic: req.session.accademic,
+          pageTitle: "Subjects | FCI",
+          image: req.session.image,
+        });
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
 exports.getSubToAdmin = (req, res, next) => {
   SubModel.getItems()
     .then((subjects) => {
       res.render("getMaterials", {
         subjects: subjects,
-        pageTitle: "Subjects | FCI",
         validationError: req.flash("validationErrors")[0],
+        name: req.session.name,
+        type: req.session.type,
+        prevSub: req.session.prevSub,
+        accademic: req.session.accademic,
+        pageTitle: "Subjects | FCI",
         subAddedSuccessfully: req.flash("subAddedSuccessfully")[0],
         deleteSub: req.flash("deleteSub")[0],
+        image: req.session.image,
       });
     })
     .catch((err) => {
@@ -33,6 +63,26 @@ exports.getSubToAdmin = (req, res, next) => {
     });
 };
 
+exports.getSubToAdminAbsence = (req, res, next) => {
+  SubModel.getItems()
+    .then((subjects) => {
+      res.render("adminAbsence", {
+        subjects: subjects,
+        validationError: req.flash("validationErrors")[0],
+        name: req.session.name,
+        type: req.session.type,
+        prevSub: req.session.prevSub,
+        accademic: req.session.accademic,
+        pageTitle: "Subjects | FCI",
+        subAddedSuccessfully: req.flash("subAddedSuccessfully")[0],
+        deleteSub: req.flash("deleteSub")[0],
+        image: req.session.image,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
 exports.postSub = (req, res, next) => {
   if (validationResult(req).isEmpty()) {
@@ -80,9 +130,14 @@ exports.getsubEdit = (req, res, next) => {
           items: items,
           subId: req.params.subId,
           sub: sub,
+          name: req.session.name,
+          type: req.session.type,
+          subId: req.params.subId,
+          accademic: req.session.accademic,
           pageTitle: "Subjects | FCI",
           validationErrs: req.flash("validationErrs"),
           subAddErr: req.flash("subAddErr")[0],
+          image: req.session.image,
         });
       });
     })

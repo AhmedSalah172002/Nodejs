@@ -39,7 +39,23 @@ exports.addNewItem = (data) => {
   });
 };
 
-
+exports.getDocSub = (docName) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(DB_URL)
+      .then(() => {
+        return SubjectItem.find({ subDoc: docName });
+      })
+      .then((items) => {
+        resolve(items);
+        mongoose.disconnect();
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
 
 exports.getItems = () => {
   return new Promise((resolve, reject) => {
@@ -80,13 +96,63 @@ exports.editItem = (data) => {
     mongoose
       .connect(DB_URL)
       .then(() => {
-        return SubjectItem.findOne({ subName: data.data.subName });
+        return SubjectItem.findByIdAndUpdate(data.id, data.data);
       })
-      .then((items) => {
-        if (!items) {
-          return SubjectItem.findByIdAndUpdate(data.id, data.data);
-        }else{
-          reject()
+      .then(() => {
+        mongoose.disconnect();
+        resolve();
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
+
+exports.getDocSubInfo = (subName) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(DB_URL)
+      .then(() => {
+        return SubjectItem.findOne({ subName });
+      })
+      .then((sub) => {
+        mongoose.disconnect();
+        resolve(sub);
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
+
+exports.addPdfToSub = (data) => {
+  const subName = data.subName;
+  const subDoc = data.docName;
+  const filename = data.filename;
+  return new Promise((resolve, reject) => {
+    /*
+        1-  get sub
+        2-  check if file exist
+                reject
+            else 
+                add
+        */
+    mongoose
+      .connect(DB_URL)
+      .then(() => {
+        return SubjectItem.findOne({ subName, subDoc });
+      })
+      .then((sub) => {
+        if (sub.material.includes(filename)) {
+          mongoose.disconnect();
+          reject("هذا الملف موجود من قبل");
+        } else {
+          return SubjectItem.findOneAndUpdate(
+            { subName, subDoc },
+            { $push: { material: filename } }
+          );
         }
       })
       .then(() => {
@@ -100,7 +166,47 @@ exports.editItem = (data) => {
   });
 };
 
+exports.getAllPdf = (subName, subDoc) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(DB_URL)
+      .then(() => {
+        return SubjectItem.findOne({ subName, subDoc });
+      })
+      .then((sub) => {
+        mongoose.disconnect();
+        resolve(sub.material);
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
 
+exports.deletePdfByName = (data) => {
+  const subName = data.subName;
+  const subDoc = data.docName;
+  const filename = data.filename;
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(DB_URL)
+      .then(() => {
+        return SubjectItem.findOneAndUpdate(
+          { subName, subDoc },
+          { $pull: { material: filename } }
+        );
+      })
+      .then(() => {
+        mongoose.disconnect();
+        resolve("file deleted successfully");
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
 
 exports.getSubjectMaterial = (subName) => {
   return new Promise((resolve, reject) => {

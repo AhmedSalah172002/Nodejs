@@ -6,7 +6,13 @@ exports.getDept = (req, res, next) => {
     .then((items) => {
       res.render("departments", {
         items: items,
+        name: req.session.name,
+        type: req.session.type,
+        accademic: req.session.accademic,
+        image: req.session.image,
         pageTitle: "Departments | FCI",
+        validationErrs: req.flash("validationErrs"),
+        deptAddErr: req.flash("deptAddErr")[0],
       });
     })
     .catch((err) => {
@@ -19,7 +25,33 @@ exports.getDepartments = (req, res, next) => {
     .then((items) => {
       res.render("getDepartments", {
         items: items,
+        name: req.session.name,
+        type: req.session.type,
+        accademic: req.session.accademic,
+        image: req.session.image,
         pageTitle: "Departments | FCI",
+        deptAddedSuccessfully: req.flash("deptAddedSuccessfully")[0],
+        validationError: req.flash("validationErrors")[0],
+        deleteDept: req.flash("deleteDept")[0],
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.getDeptToSub = (req, res, next) => {
+  DeptModel.getItems()
+    .then((items) => {
+      res.render("materials", {
+        items: items,
+        name: req.session.name,
+        type: req.session.type,
+        pageTitle: "Add-Subjects | FCI",
+        validationErrs: req.flash("validationErrs"),
+        postSubErr: req.flash("postSubErr")[0],
+        accademic: req.session.accademic,
+        image: req.session.image,
       });
     })
     .catch((err) => {
@@ -67,9 +99,13 @@ exports.getDeptEdit = (req, res, next) => {
       res.render("edit/deptEdit", {
         items: items,
         deptId: req.params.deptId,
+        name: req.session.name,
+        type: req.session.type,
+        accademic: req.session.accademic,
         pageTitle: "Departments | FCI",
         validationErrs: req.flash("validationErrs"),
         deptAddErr: req.flash("deptAddErr")[0],
+        image: req.session.image,
       });
     })
     .catch((err) => {

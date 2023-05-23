@@ -8,6 +8,12 @@ const { check } = require("express-validator");
 
 router.get("/", Type.isAdmin, signupController.getUsers);
 
+// router.post(
+//     "/delete",Type.isAdmin,
+//     bodyParser.urlencoded({ extended: true }),
+//     signupController.postDelete
+// );
+
 router.post(
   "/:id",
   Type.isAdmin,

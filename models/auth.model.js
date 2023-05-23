@@ -24,7 +24,58 @@ const userSchema = mongoose.Schema({
 
 const User = mongoose.model("user", userSchema);
 
+exports.addToSignup = (username, type, password, accademic, prevSub) => {
+  const addedSuccessfully = "تم اضافه مستخدم جديد";
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(db_url)
+      .then(() => {
+        return User.findOne({ username, accademic });
+      })
+      .then((user) => {
+        if (user) {
+          reject("الحساب موجود بالفعل");
+          mongoose.disconnect();
+        }
+      })
+      .then(() => {
+        let user = new User({
+          username: username,
+          password: password,
+          accademic: accademic,
+          prevSub: prevSub,
+          type: type,
+        });
+        return user.save();
+      })
+      .then(() => {
+        mongoose.disconnect();
+        resolve(addedSuccessfully);
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
 
+exports.getItems = () => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(db_url)
+      .then(() => {
+        return User.find({});
+      })
+      .then((items) => {
+        resolve(items);
+        mongoose.disconnect();
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
 
 exports.addToLogin = (username, password) => {
   return new Promise((resolve, reject) => {
@@ -63,3 +114,85 @@ exports.addToLogin = (username, password) => {
   });
 };
 
+exports.deleteItem = (username, _id) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(db_url)
+      .then(() => User.findOneAndDelete({ username, _id }))
+      .then(() => {
+        mongoose.disconnect();
+        resolve();
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};
+
+exports.changePassword = (username, userId, newPassword, oldPassword) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(db_url)
+      .then(() => {
+        return User.findOne({ _id: userId, username });
+      })
+      .then((user) => {
+        if (user.password == oldPassword) {
+          return User.findOneAndUpdate(
+            { _id: userId, username },
+            { password: newPassword }
+          );
+        } else {
+          mongoose.disconnect();
+          reject("كلمه السر القديمه غير صحيحه");
+        }
+      })
+      .then(() => {
+        mongoose.disconnect();
+        resolve("تم تغير كلمة المرور بنجاح");
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        resolve("حدث خطأ اثناء تغير كلمه المرور");
+        console.log(err);
+      });
+  });
+};
+
+exports.editUser = (data) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(db_url)
+      .then(() => {
+        return User.findByIdAndUpdate(data.id, data.data);
+      })
+      .then(() => {
+        mongoose.disconnect();
+        resolve("تم التعديل علي المستخدم بنجاح");
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        resolve("حدث خطأ اثناء التعديل");
+        console.log(err);
+      });
+  });
+};
+
+exports.changeImage = (username, userId, image) => {
+  return new Promise((resolve, reject) => {
+    mongoose
+      .connect(db_url)
+      .then(() => {
+        return User.findOneAndUpdate({ username, _id: userId }, { image });
+      })
+      .then(() => {
+        mongoose.disconnect();
+        resolve();
+      })
+      .catch((err) => {
+        mongoose.disconnect();
+        reject(err);
+      });
+  });
+};

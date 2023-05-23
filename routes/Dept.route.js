@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const bodyParser = require("body-parser");
 const check = require("express-validator").check;
+
 const Type = require("./auth.type");
+
 const deptController = require("../controllers/Dept.controller");
 
 router.get("/", Type.isAdmin, deptController.getDept);
