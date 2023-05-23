@@ -24,101 +24,41 @@ const userSchema = mongoose.Schema({
 
 const User = mongoose.model("user", userSchema);
 
-exports.addToSignup = (username, type, password, accademic, prevSub) => {
-  const addedSuccessfully = "تم اضافه مستخدم جديد";
+
+
+exports.addToLogin = (username, password) => {
   return new Promise((resolve, reject) => {
     mongoose
       .connect(db_url)
       .then(() => {
-        return User.findOne({ username, accademic });
+        return User.findOne({ username: username });
       })
       .then((user) => {
-        if (user) {
-          reject("الحساب موجود بالفعل");
+        if (!user) {
           mongoose.disconnect();
+          reject("الاسم خطأ");
+        } else {
+          return User.findOne({ password: password }).then((same) => {
+            if (!same) {
+              mongoose.disconnect();
+              reject("كلمه السر خطأ");
+            } else {
+              mongoose.disconnect();
+              resolve({
+                id: user._id,
+                type: user.type,
+                username: user.username,
+                prevSub: user.prevSub,
+                accademic: user.accademic,
+                image: user.image,
+              });
+            }
+          });
         }
       })
-      .then(() => {
-        let user = new User({
-          username: username,
-          password: password,
-          accademic: accademic,
-          prevSub: prevSub,
-          type: type,
-        });
-        return user.save();
-      })
-      .then(() => {
-        mongoose.disconnect();
-        resolve(addedSuccessfully);
-      })
       .catch((err) => {
         mongoose.disconnect();
         reject(err);
-      });
-  });
-};
-
-exports.getItems = () => {
-  return new Promise((resolve, reject) => {
-    mongoose
-      .connect(db_url)
-      .then(() => {
-        return User.find({});
-      })
-      .then((items) => {
-        resolve(items);
-        mongoose.disconnect();
-      })
-      .catch((err) => {
-        mongoose.disconnect();
-        reject(err);
-      });
-  });
-};
-
-
-
-exports.deleteItem = (username, _id) => {
-  return new Promise((resolve, reject) => {
-    mongoose
-      .connect(db_url)
-      .then(() => User.findOneAndDelete({ username, _id }))
-      .then(() => {
-        mongoose.disconnect();
-        resolve();
-      })
-      .catch((err) => {
-        mongoose.disconnect();
-        reject(err);
-      });
-  });
-};
-
-
-
-exports.editUser = (data) => {
-  return new Promise((resolve, reject) => {
-    mongoose
-      .connect(db_url)
-      .then(() => {
-        return User.findOne({ username: data.data.username });
-      })
-      .then((items) => {
-        if (!items) {
-          return User.findByIdAndUpdate(data.id, data.data);
-        }else{
-          reject()
-        }
-      })
-      .then(() => {
-        mongoose.disconnect();
-        resolve("تم التعديل علي المستخدم بنجاح");
-      })
-      .catch((err) => {
-        mongoose.disconnect();
-        resolve("حدث خطأ اثناء التعديل");
-        console.log(err);
       });
   });
 };

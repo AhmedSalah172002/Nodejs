@@ -2,117 +2,61 @@ const { validationResult } = require("express-validator");
 const user = require("../models/auth.model");
 const StudentModel = require("../models/student.model");
 
-exports.getUsers = (req, res, next) => {
-  user
-    .getItems()
-    .then((Users) => {
-      res.render("UsersPages/users", {
-        Users: Users,
-        pageTitle: "Users | FCI",
-        validationError: req.flash("validationErrors")[0],
-        addedSuccessfully: req.flash("addedSuccessfully")[0],
-        deleteUser: req.flash("deleteUser")[0],
-        editStatus: req.flash("editStatus")[0],
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      req.flash("fetchUsersErr", "Something went wrong");
-    });
-};
 
 
-
-exports.getSignup = (req, res, next) => {
-  res.render("AuthPages/signup", {
-    pageTitle: "Signup | FCI",
-    validationErrs: req.flash("validationErrs"),
-    authErr: req.flash("authErr")[0],
+exports.getHome = (req, res, next) => {
+  res.render("index", {
+    name: req.session.name,
+    type: req.session.type,
+    accademic: req.session.accademic,
+    pageTitle: "FCI",
+    image: req.session.image,
+    validationErr: req.flash("validationErr")[0],
   });
 };
 
-exports.postSignup = (req, res, next) => {
+
+
+
+exports.getlogin = (req, res, next) => {
+  res.render("AuthPages/login", {
+    name: req.session.name,
+    accademic: req.session.accademic,
+    type: req.session.type,
+    image: req.session.image,
+    pageTitle: "Login | FCI",
+    authErr: req.flash("authErr")[0],
+    validationErrs: req.flash("validationErrs"),
+  });
+};
+
+exports.postlogin = (req, res, next) => {
   if (validationResult(req).isEmpty()) {
     user
-      .addToSignup(
-        req.body.username,
-        req.body.type,
-        req.body.password,
-        req.body.accademic,
-        req.body.prevSub
-      )
-      .then((addedSuccessfully) => {
-        res.redirect("/users");
-        req.flash("addedSuccessfully", addedSuccessfully);
+      .addToLogin(req.body.username, req.body.password)
+      .then((user) => {
+        req.session.userId = user.id;
+        req.session.type = user.type;
+        req.session.name = user.username;
+        req.session.prevSub = user.prevSub;
+        req.session.accademic = user.accademic;
+        req.session.image = user.image;
+        res.redirect("/");
       })
       .catch((err) => {
-        res.redirect("/signup");
         req.flash("authErr", err);
+        res.redirect("/login");
       });
   } else {
     req.flash("validationErrs", validationResult(req).array());
-    res.redirect("/signup");
+    res.redirect("/login");
   }
 };
 
 
-
-exports.postDelete = (req, res, next) => {
-  user
-    .deleteItem(req.body.username, req.body._id)
-    .then(() => {
-      res.redirect("/users");
-      req.flash("deleteUser", "تم ازاله المستخدم");
-    })
-    .catch((err) => {
-      console.log(err);
-      req.flash("deleteUser", "حدث خطأ ");
-      res.redirect("/users");
-    });
-};
-
-
-
-exports.getEditPageUser = (req, res, next) => {
-  user.getItems().then((users) => {
-    users = users.filter((e) => e._id == req.params.userId);
-    res.render("AuthPages/editUser", {
-      users: users,
-      id: req.params.userId,
-      pageTitle: "User | Edit",
-      validationErrs: req.flash("validationErr")[0],
-      editUserStatus: req.flash("editStatus")[0],
-      deleteImageStatus: req.flash("deleteImageStatus")[0],
-    });
+exports.logout = (req, res, next) => {
+  req.session.destroy(() => {
+    res.redirect("/");
   });
-};
-
-exports.postEditPage = (req, res, next) => {
-  if (validationResult(req).isEmpty()) {
-    user
-      .editUser({
-        id: req.params.userId,
-        data: {
-          username: req.body.username,
-          type: req.body.type,
-          password: req.body.password,
-          accademic: req.body.accademic,
-          prevSub: req.body.prevSub,
-          image: req.session.image,
-        },
-      })
-      .then(() => {
-        res.redirect("/users");
-        req.flash("editStatus", "تم التعديل بنجاح");
-      })
-      .catch((err) => {
-        console.log(err);
-        res.redirect(`/users/edit/${req.params.userId}`);
-        req.flash("editStatus", "حدث خطأ حاول مره اخرى");
-      });
-  } else {
-    res.redirect(`/users/edit/${req.params.userId}`);
-    req.flash("validationErr", validationResult(req).array());
-  }
 };
 
